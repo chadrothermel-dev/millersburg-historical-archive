@@ -431,6 +431,29 @@ function initAuthSystem() {
         closeModal('auth-modal');
     });
 
+    // Local Account Registration Trigger
+    const registerForm = document.getElementById('local-register-form');
+    registerForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const fullName = document.getElementById('reg-fullname').value.trim();
+        const email = document.getElementById('reg-email').value.trim();
+        const role = document.getElementById('reg-role').value;
+
+        const registeredUser = {
+            name: fullName,
+            email: email,
+            provider: 'Local Account',
+            roles: [role]
+        };
+
+        // Save account locally
+        localStorage.setItem(`user_${email}`, JSON.stringify(registeredUser));
+
+        loginUser(registeredUser);
+        closeModal('auth-modal');
+        alert(`Account successfully created for ${fullName}! You are now logged in with full ${role} privileges.`);
+    });
+
     function loginUser(user) {
         currentUser = user;
         authBtn.classList.add('hidden');
@@ -539,6 +562,7 @@ function initModals() {
             const target = tab.getAttribute('data-tab');
             document.getElementById('auth-tab-entra').classList.toggle('hidden', target !== 'entra');
             document.getElementById('auth-tab-local').classList.toggle('hidden', target !== 'local');
+            document.getElementById('auth-tab-register').classList.toggle('hidden', target !== 'register');
         });
     });
 }

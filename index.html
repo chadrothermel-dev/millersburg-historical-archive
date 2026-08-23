@@ -338,10 +338,13 @@
             <!-- Auth Provider Selector Tabs -->
             <div class="auth-tabs">
                 <button class="auth-tab-btn active" data-tab="entra">
-                    <span class="provider-icon">🛡️</span> Microsoft Entra ID (Azure AD)
+                    <span class="provider-icon">🛡️</span> Microsoft Entra ID
                 </button>
                 <button class="auth-tab-btn" data-tab="local">
-                    <span class="provider-icon">🔑</span> Local Account
+                    <span class="provider-icon">🔑</span> Sign In
+                </button>
+                <button class="auth-tab-btn" data-tab="register">
+                    <span class="provider-icon">✨</span> Create Account
                 </button>
             </div>
 
@@ -368,7 +371,7 @@
                 </div>
             </div>
 
-            <!-- Tab 2: Local Historical Account -->
+            <!-- Tab 2: Local Historical Account Sign In -->
             <div id="auth-tab-local" class="auth-tab-content hidden">
                 <form id="local-login-form" class="auth-form">
                     <div class="form-group">
@@ -381,6 +384,35 @@
                     </div>
                     <button type="submit" class="btn btn-gold btn-full">
                         <span>🔑 Sign In with Local Account</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Tab 3: Create New Local Account (Registration) -->
+            <div id="auth-tab-register" class="auth-tab-content hidden">
+                <form id="local-register-form" class="auth-form">
+                    <div class="form-group">
+                        <label for="reg-fullname">Full Name</label>
+                        <input type="text" id="reg-fullname" placeholder="e.g. Sarah Jenkins" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-email">Email Address</label>
+                        <input type="email" id="reg-email" placeholder="e.g. sjenkins@millersburg.org" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-role">Requested Role</label>
+                        <select id="reg-role">
+                            <option value="Volunteer Archivist">Volunteer Archivist (Upload & Index)</option>
+                            <option value="Town Historian">Town Historian (Full Access)</option>
+                            <option value="Community Member">Community Member (Contributor)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="reg-password">Create Password</label>
+                        <input type="password" id="reg-password" placeholder="At least 8 characters" minlength="8" required>
+                    </div>
+                    <button type="submit" class="btn btn-gold btn-full">
+                        <span>✨ Create Account & Register</span>
                     </button>
                 </form>
             </div>
