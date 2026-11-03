@@ -1,84 +1,91 @@
 # Historical Society of Millersburg & Upper Paxton Township
-### Digital Photo Archive, Metadata Indexer & Upload System
+### Digital Photo Archive
 
-A web application built for the **Historical Society of Millersburg & Upper Paxton Township (HSMUPT)** to catalog, index, search, and preserve historical photographs documenting the Susquehanna River, Millersburg Ferry, Northern Central Railway, Market Square, and pioneer life in Upper Paxton Township, Pennsylvania.
+[![Build and Deploy to GitHub Pages](https://github.com/chadrothermel-dev/millersburg-historical-archive/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/chadrothermel-dev/millersburg-historical-archive/actions/workflows/deploy-pages.yml)
 
----
+**Live site:** https://chadrothermel-dev.github.io/millersburg-historical-archive/
 
-## Key Features
+A searchable photo archive for the **Historical Society of Millersburg & Upper Paxton Township (HSMUPT)**, styled to match the Society's current website at [millersburgpahistory.org](https://www.millersburgpahistory.org): the same cream, navy, gold, maroon, and river-blue palette, Fjalla One and Frank Ruhl Libre type, and the About / Discover / Support / Contact navigation.
 
-### 1. Metadata Indexing & Search Engine
-- **Instant Keyword & Tag Search:** Query historical records by title, year (1800s to 2000s), location (*Susquehanna River, Center St, Market Square, Berry Mountain*), photographer, donor, and tags.
-- **Categorical & Era Filtering:** Filter collections by Era (*19th Century, Early 20th, Mid 20th*) and Category (*Transportation, Architecture, People, Events, Landscape*).
-- **EXIF & Archive Inspector Modal:** Displays complete archival records (Year Taken, GPS/Location, Donor, Photographer, Rights, File Specifications) with 1-click high-res downloads.
-
-### 2. Single & Bulk Photo Uploader
-- **Drag-and-Drop Dropzone:** Upload single or bulk historical image files (`.jpg`, `.png`, `.webp`, `.tiff`).
-- **Batch Metadata Editor:** Apply common default tags, era/year, location, and category across all staged files in one click or customize individually.
-- **Client-Side Base64 Reader:** Auto-previews thumbnail images and stages records for catalog indexing.
-
-### 3. Microsoft Entra ID & Local Authentication
-- **Microsoft Entra ID (Azure AD) SSO:** Integrated Single Sign-On flow targeting organizational tenant credentials (`millersburgpahistory.onmicrosoft.com`).
-- **Local Account & Registration Portal:** Alternate registration and sign-in tab for township volunteers and community contributors.
-- **Role-Based Access Control (RBAC):** Restricts uploading, cataloging, editing, and deleting records to authenticated archivists.
+> **Demo status:** the six gallery records are **sample entries with stock images**, not items from the Society's collection. Uploads, sign-in, and account creation run entirely in the browser and are not saved anywhere; refreshing the page resets them.
 
 ---
 
-## Repository File Structure
+## What's on the page
+
+| Section | Contents |
+|---|---|
+| Hero & mission | Society wordmark, "From the River to the Railroad" intro, four mission pillars |
+| By the Numbers | 3 floors of artifacts, 100+ years of newspapers, 20K+ photographs |
+| Search the Collection | Keyword search plus category, era, and sort filters |
+| Photo Collection | Card grid; click a card for the full scan, metadata table, and keywords |
+| History | Timeline from the Paleo-Indian era to the 1898 passenger station |
+| Visit the Museum | 330 Center Street, phone, and a link to the official hours page |
+| Membership | Student, Individual, Family, and Lifetime tiers (links to the official join page) |
+| Upload & Login | Drag-and-drop bulk uploader with batch metadata editor; simulated Entra ID and local sign-in |
+
+Pages the archive doesn't host (Rail Passenger Station, Tour, Events, Donate, Volunteer, and so on) link to the matching page on the official site.
+
+---
+
+## Repository layout
 
 ```
 millersburg-historical-archive/
-├── index.html       # HTML5 Application Structure & Modals (Search, Upload, Auth, Inspector)
-├── style.css        # Heritage Design System (Parchment, Mahogany, Gold, Glassmorphic UI)
-├── script.js        # Core Application Logic (Database, Filter Engine, Uploader, Auth State)
-└── README.md        # Technical Documentation & Azure Deployment Guide
+├── .github/workflows/deploy-pages.yml   # CI/CD: validate, then deploy to GitHub Pages
+├── index.html                           # Page structure, sections, and modals
+├── style.css                            # Design system (palette, type, layout, responsive rules)
+├── script.js                            # Archive data, search/filter engine, uploader, auth demo
+└── README.md
+```
+
+No build step and no dependencies: it's plain HTML, CSS, and JavaScript.
+
+---
+
+## Run it locally
+
+```bash
+git clone https://github.com/chadrothermel-dev/millersburg-historical-archive.git
+cd millersburg-historical-archive
+python -m http.server 8085
+```
+
+Then open http://localhost:8085.
+
+---
+
+## CI/CD (GitHub Actions + GitHub Pages)
+
+Every push to `master` (or `main`) runs [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml):
+
+1. **Validate**
+   - Lints `index.html` with HTMLHint.
+   - Syntax-checks `script.js` with `node --check`.
+   - Confirms every `getElementById(...)` target in `script.js` exists in `index.html`, so a markup change can't silently break the app.
+2. **Deploy**: if validation passes, it publishes the site files to GitHub Pages.
+
+Pull requests run the validation job only, so problems show up before merging. You can also start a deploy by hand from **Actions → Build and Deploy to GitHub Pages → Run workflow**, or with:
+
+```bash
+gh workflow run deploy-pages.yml
+```
+
+**One-time setup** (already done for this repo): **Settings → Pages → Source: GitHub Actions**, or:
+
+```bash
+gh api -X POST repos/chadrothermel-dev/millersburg-historical-archive/pages -f build_type=workflow
 ```
 
 ---
 
-## Quick Start (Local Running)
+## Next steps toward production
 
-To test the application locally on your computer:
-
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/chadrothermel-dev/millersburg-historical-archive.git
-   cd millersburg-historical-archive
-   ```
-
-2. **Launch a local HTTP server:**
-   ```bash
-   # Using Python 3
-   python -m http.server 8085
-   ```
-
-3. **Open in browser:**
-   Navigate to **`http://localhost:8085`** in your browser.
-
----
-
-## Azure Deployment Guide ($0/month Hosting)
-
-This application is optimized for low-cost / zero-cost hosting using **Azure Static Web Apps** and **Azure Blob Storage**:
-
-### Step 1: Deploy Frontend to Azure Static Web Apps (Free Tier)
-1. Sign into the **[Azure Portal](https://portal.azure.com)**.
-2. Click **Create a Resource** > Search for **Static Web App** > Click **Create**.
-3. Select your Azure Subscription and Resource Group.
-4. Under **Deployment Details**, select **GitHub** and authorize your account.
-5. Select repository `chadrothermel-dev/millersburg-historical-archive` and branch `master`.
-6. Click **Review + Create**. Azure will automatically build and host the site with a free SSL certificate.
-
-### Step 2: Configure Microsoft Entra ID (Azure AD)
-1. Open [Microsoft Entra Admin Center](https://entra.microsoft.com).
-2. Go to **Identity** > **Applications** > **App registrations** > **New registration**.
-3. Set Name to `Millersburg Historical Archive` and set Redirect URI to `https://your-azure-static-app.azurestaticapps.net`.
-4. Copy your **Application (client) ID** and **Directory (tenant) ID** into your `script.js` configuration.
-
-### 501(c)(3) Non-Profit Cloud Grant
-The Historical Society can apply for **$2,000 USD/year in FREE Azure cloud credits** via **[Microsoft for Nonprofits](https://www.microsoft.com/nonprofit)**, making storage and hosting 100% free.
+- Replace the sample records in `script.js` with real catalog entries and scans from the Society's collection.
+- Store uploads in persistent storage (for example Azure Blob Storage or a GitHub-backed content folder) instead of browser memory.
+- Wire the Entra ID button to a real app registration using MSAL.js, with the Pages URL as the redirect URI.
 
 ---
 
 ## License
-This project is licensed under the MIT License - free for educational, community, and historical preservation use.
+MIT. Free for educational, community, and historical preservation use. Society name, history, and membership details are drawn from [millersburgpahistory.org](https://www.millersburgpahistory.org).

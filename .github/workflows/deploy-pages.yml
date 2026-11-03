@@ -1,0 +1,66 @@
+# CI/CD: validate the static site, then deploy it to GitHub Pages.
+# Runs on every push to master/main, on pull requests (validate only), and on demand.
+name: Build and Deploy to GitHub Pages
+
+on:
+  push:
+    branches: ["main", "master"]
+  pull_request:
+    branches: ["main", "master"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Lint HTML
+        run: npx --yes htmlhint@1.1.4 index.html
+
+      - name: Check JavaScript syntax
+        run: node --check script.js
+
+      - name: Verify every element ID used by script.js exists in index.html
+        run: |
+          missing=0
+          for id in $(grep -oP "getElementById\('\K[^']+" script.js | sort -u); do
+            if ! grep -q "id=\"$id\"" index.html; then
+              echo "::error file=script.js::Missing element id '$id' in index.html"
+              missing=1
+            fi
+          done
+          exit $missing
+
+      - name: Stage site files
+        run: |
+          mkdir -p _site
+          cp index.html style.css script.js _site/
+
+      - name: Upload Pages artifact
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: validate
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

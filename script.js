@@ -91,6 +91,9 @@ let archiveDatabase = [
     }
 ];
 
+// Seed records use stand-in stock images and are labeled as samples in the UI
+archiveDatabase.forEach(photo => { photo.sample = true; });
+
 // Current Authentication State
 let currentUser = null; // null or { name: '...', email: '...', provider: 'Entra ID' | 'Local Account' }
 let stagedFiles = []; // Staged files in upload modal
@@ -103,7 +106,34 @@ document.addEventListener('DOMContentLoaded', () => {
     initModals();
     initUploader();
     initAuthSystem();
+    initNavigation();
 });
+
+/* ==========================================================================
+   0. Mobile Navigation & Dropdown Folders
+   ========================================================================== */
+function initNavigation() {
+    const toggle = document.getElementById('nav-toggle');
+    const menu = document.getElementById('nav-menu');
+
+    toggle.addEventListener('click', () => {
+        const open = menu.classList.toggle('open');
+        toggle.setAttribute('aria-expanded', open);
+    });
+
+    // Close the mobile menu after following an in-page link
+    menu.querySelectorAll('a[href^="#"]').forEach(link => {
+        link.addEventListener('click', () => {
+            menu.classList.remove('open');
+            toggle.setAttribute('aria-expanded', 'false');
+        });
+    });
+
+    // Tap-to-open folders for touch devices
+    document.querySelectorAll('.nav-folder-btn').forEach(btn => {
+        btn.addEventListener('click', () => btn.parentElement.classList.toggle('open'));
+    });
+}
 
 /* ==========================================================================
    1. Render Photo Gallery Grid
@@ -126,17 +156,20 @@ function renderPhotoGrid(items) {
     items.forEach(photo => {
         const card = document.createElement('div');
         card.className = 'photo-card';
+        card.tabIndex = 0;
+        card.setAttribute('role', 'button');
         card.innerHTML = `
             <div class="photo-thumb-wrapper">
                 <img src="${photo.imageUrl}" alt="${photo.title}" class="photo-thumb" loading="lazy">
                 <span class="photo-badge-era">${photo.year}</span>
                 <span class="photo-badge-cat">${photo.category}</span>
+                ${photo.sample ? '<span class="photo-badge-sample">Sample</span>' : ''}
             </div>
             <div class="photo-details">
                 <h3 class="photo-title">${photo.title}</h3>
                 <div class="photo-meta-row">
-                    <span>📍 ${photo.location}</span>
-                    <span>🆔 ${photo.id}</span>
+                    <span>${photo.location}</span>
+                    <span>${photo.id}</span>
                 </div>
                 <div class="photo-tags">
                     ${photo.tags.slice(0, 4).map(tag => `<span class="tag-pill">#${tag}</span>`).join('')}
@@ -145,6 +178,12 @@ function renderPhotoGrid(items) {
         `;
 
         card.addEventListener('click', () => openPhotoDetailModal(photo));
+        card.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                openPhotoDetailModal(photo);
+            }
+        });
         grid.appendChild(card);
     });
 }
@@ -357,6 +396,7 @@ function initUploader() {
             return;
         }
 
+        const uploadedCount = stagedFiles.length;
         stagedFiles.forEach(item => {
             const newRecord = {
                 id: `MHS-${item.year}-${Math.floor(100 + Math.random() * 900)}`,
@@ -381,7 +421,7 @@ function initUploader() {
         updateStatsRibbon();
         closeModal('upload-modal');
 
-        alert(`Successfully indexed and uploaded ${stagedFiles.length || 'all'} historical photograph(s) to the catalog!`);
+        alert(`Indexed ${uploadedCount} photograph(s) into the catalog for this browser session.`);
     });
 }
 
@@ -390,8 +430,6 @@ function initUploader() {
    ========================================================================== */
 function initAuthSystem() {
     const authBtn = document.getElementById('auth-modal-btn');
-    const authStatusText = document.getElementById('auth-status-text');
-    const authStatusIcon = document.getElementById('auth-status-icon');
     const userBadge = document.getElementById('user-profile-badge');
     const userNameEl = document.getElementById('user-display-name');
     const userTagEl = document.getElementById('user-provider-tag');
@@ -405,15 +443,15 @@ function initAuthSystem() {
     entraBtn.addEventListener('click', () => {
         // Simulate MSAL Entra ID OAuth Redirect / Token Acquisition
         const entraUser = {
-            name: 'Chad Rothermel (Archivist)',
-            email: 'chadr@millersburgpahistory.org',
+            name: 'Society Archivist',
+            email: 'archivist@example.org',
             provider: 'Microsoft Entra ID',
             roles: ['Archive.Admin', 'Metadata.Editor']
         };
 
         loginUser(entraUser);
         closeModal('auth-modal');
-        alert(' Successfully authenticated via Microsoft Entra ID Single Sign-On (Azure AD)! You now have full upload and catalog management privileges.');
+        alert('Signed in with simulated Microsoft Entra ID single sign-on. Upload and catalog tools are now unlocked.');
     });
 
     // Local Account Login Trigger
